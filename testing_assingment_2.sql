@@ -31,9 +31,10 @@ CREATE TABLE IF NOT EXISTS `Group Acount`(
 `AcountID`					INT,
 `JoinDate`					DATE	
 );
-ALTER TABLE `Group Acount`
+/* ALTER TABLE `Group Acount`
 ADD CONSTRAINT FK1 FOREIGN KEY (GroupID) REFERENCES `Group` (GroupID);
-
+ALTER TABLE `Group Acount`
+drop constraint FK1;*/
 CREATE TABLE IF NOT EXISTS `TypeQuestion`(
 `TypeID`					INT,
 -- auto increment 
