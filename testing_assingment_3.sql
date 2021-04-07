@@ -1,12 +1,14 @@
 CREATE DATABASE IF NOT EXISTS testing_assignment_3;
 use testing_assignment_3;
--- TABLE1 
+-- TABLE1
+-- drop table  department;
 CREATE TABLE IF NOT EXISTS department(
 DepartmentID		INT PRIMARY KEY AUTO_INCREMENT,
 DepartmentName		Varchar(100) UNIQUE KEY
 );
-ALTER TABLE department
-CHANGE COLUMN DepartmentName DepartmentName Varchar(50);
+/*ALTER TABLE department
+CHANGE COLUMN DepartmentName DepartmentName Varchar(50),
+MODIFY DepartmentName Varchar(100) UNIQUE KEY ;*/
 INSERT INTO department (DepartmentName)
 VALUES (N'Marketing'),
 		(N'Sales'),
@@ -19,7 +21,7 @@ VALUES (N'Marketing'),
         (N'Thu ky'),
         (N'Ban hang');
 -- show columns from department;
-select * from department;
+select * from department order by DepartmentID;
 -- END OF TABLE 1 	
 
 
@@ -51,14 +53,16 @@ DepartmentID		INT UNIQUE KEY,
 PositionID			INT UNIQUE KEY,
 CreateDate			DATETIME UNIQUE KEY
 );
--- ALTER TABLE acount
--- DROP INDEX CreateDate;
--- DROP INDEX PositionID;
-SHOW COLUMNS FROM acount;
+show columns from acount;
+select *from acount;
+/* ALTER TABLE acount
+DROP INDEX CreateDate,
+DROP INDEX PositionID,
+DROP INDEX DepartmentID; */
 -- MODIFY AcountID INT NOT NULL PRIMARY KEY AUTO_INCREMENT;
--- MODIFY FullName			VARCHAR(100) UNIQUE KEY;
+-- MODIFY FullName VARCHAR(100) UNIQUE KEY;
 INSERT INTO acount (Email, UserName, Fullname, DepartmentID, PositionID, CreateDate)
-VALUES  ('haidang29productions@gmail.com','dangblack', 'Nguyen Hai Dang', '5', '1', '2020-03-05'),
+VALUES  ('haidang2productions@gmail.com','dangblack', 'Nguyen Hai Dang', '5', '1', '2020-03-05'),
 		('account1@gmail.com','quanganh', 'Nguyen Chien Thang2', '1', '2', '2020-03-05'),
         ('account2@gmail.com','vanchien', 'Nguyen Van Chien', '2', '3', '2020-03-07'),
 		('account3@gmail.com','cocoduongqua', 'Duong Do', '3', '4', '2020-03-08'),
@@ -67,8 +71,12 @@ VALUES  ('haidang29productions@gmail.com','dangblack', 'Nguyen Hai Dang', '5', '
         ('songcodaoly@gmail.com','huanhoahong', 'Bui Xuan Huan', '7', '2', NULL),
 		('sontungmtp@gmail.com','tungnui', 'Nguyen Thanh Tung', '8', '1', '2020-04-07'),
         ('duongghuu@gmail.com','duongghuu', 'Duong Van Huu', '9', '2', '2020-04-07'),
+        ('minhminh@gmail.com','minhminh', 'Minh Tran', '9', '3', '2020-04-02'),
+		('haiyen@gmail.com','haiyen', 'Hai Yen', '9', '4', '2020-04-03'),
         ('vtiaccademy@gmail.com','vtiaccademy','Vi Ti Ai','10','1','2020-04-09');
-
+select DepartmentID, UserName from acount GROUP BY DepartmentID order by DepartmentID limit 6;
+select fullname from acount where departmentID = 9 limit 2;
+update acount set 
 -- END OF TABLE 3
 
 
@@ -200,20 +208,21 @@ QuestionID			INT,
 isCorrect			BIT
 );
 ALTER TABLE answer
+-- drop foreign key fk_1;
 -- MODIFY AnswerID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-MODIFY isCorrect ENUM('YES','NO') NOT NULL;
--- ADD CONSTRAINT FK_1 FOREIGN KEY (AnswerID) REFERENCES question (QuestionID);
+/*ODIFY isCorrect ENUM('YES','NO') NOT NULL;*/
+ADD CONSTRAINT FK_1 FOREIGN KEY (AnswerID) REFERENCES question (QuestionID);
 SHOW COLUMNS FROM answer;
 INSERT INTO Answer	(Content,QuestionID, isCorrect	)
-VALUES 				(N'Trả lời 01'	,   1			,	'No'		),
+VALUES 				(N'Trả lời 01'	,   1			,	'No'	),
 					(N'Trả lời 02'	,   1			,	'Yes'	),
                     (N'Trả lời 03'	,   1			,	'No'	),
                     (N'Trả lời 04'	,   1			,	'Yes'	),
                     (N'Trả lời 05'	,   2			,	'No'	),
                     (N'Trả lời 06'	,   3			,	'Yes'	),
                     (N'Trả lời 07'	,   4			,	'No'	),
-                    (N'Trả lời 08'	,   8			,	'No'		),
-                    (N'Trả lời 09'	,   9			,	'Yes'		),
+                    (N'Trả lời 08'	,   8			,	'No'	),
+                    (N'Trả lời 09'	,   9			,	'Yes'	),
                     (N'Trả lời 10'	,   10			,	'Yes'	);
 	
 -- END OF TABLE 9
@@ -320,7 +329,9 @@ select fullname from acount where fullname like '%Do%';
 
  -- Q12: XOA TAT CA CAC EXAM DUOC TAO TRUOC NGAY 20/12/2019
 delete from Exam
-where CreateDate < '2019-12-20';  
+where CreateDate < '2019-12-20'; 
+
+ 
 select * from   Exam order by CatergoryID ;  
 
 
@@ -329,3 +340,6 @@ delete from question
 where content like 'Câu hỏi%';
 SELECT * FROM question;
 
+
+-- Q14: UPDATE THONG TIN CUA NHOM CO ID = 5 THANH TEN "NGUYEN BA LOC" VA EMAIL THANH LOC.NGUYENBA@VTI.COM.VN
+update 
