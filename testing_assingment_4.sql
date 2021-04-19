@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS Testing_System_Assignment_5;
-USE Testing_System_Assignment_5;
+CREATE DATABASE IF NOT EXISTS Testing_System_Assignment_4;
+USE Testing_System_Assignment_4;
 
 -- TABLE 1 
 DROP TABLE IF EXISTS `Department`;
@@ -322,8 +322,12 @@ VALUES			         (	 1    ,    1       ),
 						 (	 10	  ,    5       );
 
 
+
+/*=================== 			BÀI TẬP 			=====================*/
+
+
 -- CÂU HỎI 1 : Viết lệnh để lấy ra danh sách nhân viên và thông tin phòng ban của họ
-SELECT a.fullname, d.departmentname
+SELECT *
 FROM `account` a 
 JOIN department d
 ON a.departmentid = d.departmentid;
@@ -349,6 +353,34 @@ JOIN `account` a
 ON d.departmentid = a.departmentid 
 HAVING count('a.account'>3) ;
 
+-- CÂU HỎI 5 : Viết lệnh lấy ra danh sách câu hỏi được sử dụng nhiều nhất 
+/* SELECT e.questionID, count(q.questionID ) AS 'So Cau Hoi'
+FROM examquestion e 
+JOIN question q ON e.questionID = q.questionID
+GROUP BY e.examid;*/
+
+
+-- CÂU HỎI 6 : Thống kê mỗi Category Question được sử dụng trong bao nhiêu Question
+
+SELECT c.categoryID, count(q.questionID) AS 'So cau hoi'
+FROM categoryQuestion c
+JOIN question q USING (categoryID)
+GROUP BY c.categoryID;
+
+-- CÂU HỎI 7 : Thông kê mỗi Question được sử dụng trong bao nhiêu Exam
+SELECT questionID, count(examID)
+FROM examquestion
+GROUP BY questionid;
+
+
+
+
+
+
+
+
+
+
 -- Câu 11 : Thống kê mỗi phòng ban có bao nhiêu dev, test, scrum master, PM,...
 SELECT d.DepartmentName, p.positionname, count(*) as 'số lượng nhân viên'
 FROM `account` a 
@@ -365,7 +397,42 @@ question, loại câu hỏi, ai là người tạo ra câu hỏi, câu trả l�
  JOIN `account` ac ON q.creatorid = ac.accountid;
 
 
+-- CÂU HỎI 1 : TẠO VIEW CÓ CHỨA DANH SÁCH NHÂN VIÊN THUỘC PHÒNG BAN SALES
+CREATE OR REPLACE VIEW  SALES_MEMBERS AS 
+SELECT a.*, d.departmentname 
+FROM `account` a 
+JOIN department d
+ON a.departmentID = d.departmentID 
+WHERE d.departmentname = 'Sales';
 
+SELECT * FROM  SALES_MEMBERS ; -- Khi cần chọn lại VIEW đã tạo 
+
+WITH CTE_SALES_MEMBERS AS (
+SELECT a.*, d.departmentname 
+FROM `account` a 
+JOIN department d
+ON a.departmentID = d.departmentID 
+WHERE d.departmentname = 'Sales'
+)
+SELECT * FROM CTE_SALES_MEMBERS;  -- Chọn lại CTE đã tạo 
+
+-- Câu hỏi 2 : Tạo view có chứa thông tin các account tham gia vào nhiều group nhất
+CREATE OR REPLACE VIEW number_of_groups AS
+	SELECT a.accountID, COUNT(g.groupID) AS so_group
+	FROM `account` a 
+	JOIN groupaccount g 
+	USING (accountID)
+	GROUP BY a.accountID;
+
+-- CREATE OR REPLACE VIEW Account_in_max_group AS
+	SELECT a.AccountID, a.FullName, COUNT(g.groupID)
+	FROM `account` a 
+	JOIN groupaccount g 
+	USING (accountID)
+	GROUP BY a.accountID
+	HAVING COUNT(g.groupID) = (SELECT MAX(so_group) FROM number_of_groups);
+    
+SELECT * FROM Account_in_max_group;
 
 
 

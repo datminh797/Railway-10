@@ -156,7 +156,7 @@ insert into Account (AccountID, Username, FullName, Email, DepartmentID, Positio
 insert into Account (AccountID, Username, FullName, Email, DepartmentID, PositionID, CreateDate) values (98, 'gshutt2p', 'Gracia Shutt', 'gshutt2p@hostgator.com', 7, 6, null);
 insert into Account (AccountID, Username, FullName, Email, DepartmentID, PositionID, CreateDate) values (99, 'cwhitington2q', 'Chane Whitington', 'cwhitington2q@nymag.com', 6, 1, '2020-05-13');
 insert into Account (AccountID, Username, FullName, Email, DepartmentID, PositionID, CreateDate) values (100, 'anutton2r', 'Alick Nutton', 'anutton2r@indiegogo.com', 2, 5, '2020-12-24');
-DROP TABLE `group` ;
+DROP TABLE if exists `group` ;
 CREATE TABLE IF NOT EXISTS `group` (
 	groupID		INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     groupName	NVARCHAR(50) UNIQUE KEY,
@@ -329,82 +329,10 @@ VALUES			         (	 1    ,    1       ),
 						 (	 10	  ,    5       );
 
 
+/*======================			BÀI TẬP 		=======================*/
 
-
-
-
-
-
-
-
-
-
--- CÂU HỎI 1 : TẠO VIEW CÓ CHỨA DANH SÁCH NHÂN VIÊN THUỘC PHÒNG BAN SALES
-CREATE OR REPLACE VIEW  SALES_MEMBERS AS 
-SELECT a.*, d.departmentname 
-FROM `account` a 
-JOIN department d
-ON a.departmentID = d.departmentID 
-WHERE d.departmentname = 'Sales';
-
-SELECT * FROM  SALES_MEMBERS ; -- Khi cần chọn lại VIEW đã tạo 
-
-WITH CTE_SALES_MEMBERS AS (
-SELECT a.*, d.departmentname 
-FROM `account` a 
-JOIN department d
-ON a.departmentID = d.departmentID 
-WHERE d.departmentname = 'Sales'
-)
-SELECT * FROM CTE_SALES_MEMBERS;  -- Chọn lại CTE đã tạo 
-
--- Câu hỏi 2 : Tạo view có chứa thông tin các account tham gia vào nhiều group nhất
-CREATE OR REPLACE VIEW number_of_groups AS
-	SELECT a.accountID, COUNT(g.groupID) AS so_group
-	FROM `account` a 
-	JOIN groupaccount g 
-	USING (accountID)
-	GROUP BY a.accountID;
-
--- CREATE OR REPLACE VIEW Account_in_max_group AS
-	SELECT a.AccountID, a.FullName, COUNT(g.groupID)
-	FROM `account` a 
-	JOIN groupaccount g 
-	USING (accountID)
-	GROUP BY a.accountID
-	HAVING COUNT(g.groupID) = (SELECT MAX(so_group) FROM number_of_groups);
-    
-SELECT * FROM Account_in_max_group;
-
-
-
-/* Câu 1 : Tạo store procedure để người dùng nhập vào tên phòng ban và in ra tất cả các
-account thuộc phòng ban đó */
-DELIMITER $$
-CREATE PROCEDURE  DepartmentName_Account (IN dpName NVARCHAR(20))
-BEGIN
-
-SELECT a.accountID, a.FullName, a.email
-FROM department d /* INTO  dpAccount*/
-JOIN `account` a ON d.departmentID = a.departmentID 
-WHERE departmentname = dpName;
-
-END $$ 
-DELIMITER ;
-CALL DepartmentName_Account ('sale');
-
--- Câu 2 : Tạo store để in ra số lượng account trong mỗi group
-/*DELIMITER $$
-CREATE PROCEDURE NumAccountOfGroup (IN grname VARCHAR(20), OUT NumAccount INT)
-	BEGIN 
-		SELECT ;*/
-        
-        
-        
-        
-        
--- Câu 1 :Tạo store để người dùng nhập vào tên phòng ban và in ra tất cả các account thuộc phòng ban đó
-
+-- Câu hỏi 1 : 
+-- Câu 1 :Tạo store : Nhập vào tên phòng ban, in ra tất cả account thuộc phòng ban đó
 DROP PROCEDURE IF EXISTS dpNameAccountID;
 
 DELIMITER $$
@@ -425,46 +353,56 @@ DELIMITER ;
 CALL dpNameAccountID ('sale');
 
 
--- Câu 2 : Tạo store để in ra số lượng account trong mỗi group 
+-- Câu 2 : Tạo store: In ra số lượng account trong mỗi group 
 
 DROP PROCEDURE IF EXISTS GroupAccountNum;
 
 DELIMITER $$
+
 CREATE PROCEDURE GroupAccountNum (IN grID INT )
 BEGIN
 
 SELECT count(a.accountID) AS 'So luong Account', g.groupID, gr.groupName
 FROM `account` a 
 JOIN groupaccount g USING (accountID)
-JOIN `group` gr ON g.groupID = gr.groupID 
+JOIN `group` gr USING (groupID) 
 WHERE g.groupID = grID
 GROUP BY g.groupID; 
+
 END $$
 
 DELIMITER ;
 
 CALL GroupAccountNum (6);
 
--- Câu hỏi 3 : Tạo store để thống kê mỗi type question có bao nhiêu question được tạo trong tháng hiện tại
+-- Câu hỏi 3 : Tạo store : Thống kê mỗi type question có bao nhiêu question được tạo trong tháng hiện tại
 DROP PROCEDURE IF EXISTS typeQuestionCount;
 DELIMITER $$
 CREATE PROCEDURE typeQuestionCount ()
 BEGIN 
-SELECT count('q.questionID') AS 'So cau hoi'
+SELECT t.typeID, count('q.questionID') AS 'So cau hoi'
 FROM question q 
 JOIN typequestion t USING (typeID)
-WHERE MONTH(q.createdate) = month(now());
+WHERE MONTH(q.createDate) = MONTH(now())
+GROUP BY t.typeID;
 END $$ 
 DELIMITER ;
 
 CALL typeQuestionCount ();
 
--- Câu hỏi 4 : Tạo store để trả về id của type question có nhiều câu hỏi nhất 
+-- Câu hỏi 4 : Tạo store: Trả về id của type question có nhiều câu hỏi nhất 
 DROP PROCEDURE IF EXISTS ReturnIDOfMaxQuestion;
 DELIMITER $$
-CREATE PROCEDURE ReturnIDOfMaxQuestion ()
+CREATE PROCEDURE ReturnIDOfMaxQuestion (IN dem INT,OUT maxQty INT)
 BEGIN 
-WITH MaxOfTypeID AS(
+SELECT t.typeID, count(q.questionID) AS 'So cau hoi' INTO maxQty
+FROM typeQuestion t 
+JOIN question q USING (typeID)
+WHERE q.questionID = dem
+GROUP BY t.typeID;
+
+
+/* WITH MaxOfTypeID AS(
 SELECT 			count(typeID)
 FROM			question
 GROUP BY 		typeID
@@ -474,10 +412,13 @@ LIMIT 			1
 SELECT 			typeID
 FROM 			question 
 GROUP BY		typeID	
-HAVING			count(typeID) = (SELECT * FROM MaxOfTypeID);
+HAVING			count(typeID) = (SELECT * FROM MaxOfTypeID); */
 END $$
 DELIMITER ;
-CALL ReturnIDOfMaxQuestion ();
+
+SET @_IDOfQuestionMaxQty = 1;
+CALL ReturnIDOfMaxQuestion ( @_IDOfQuestionMaxQty);
+SELECT @_IDOfQuestionMaxQty;
 
 -- Câu hỏi 5 : Sử dụng store ở câu 4 để tìm ra tên của typeid
 DROP PROCEDURE IF EXISTS TypeNameOfMaxTypeID;
@@ -489,8 +430,7 @@ SELECT 			count(typeID)
 FROM			question
 GROUP BY 		typeID
 ORDER BY		count(typeID) DESC
-LIMIT 			1
-)
+LIMIT 			1 )
 SELECT 			typeID
 FROM 			question 
 GROUP BY		typeID	
@@ -500,40 +440,31 @@ DELIMITER ;
 CALL ReturnIDOfMaxQuestion ();
 
 
-/*
-CREATE OR REPLACE VIEW View_account_groups AS
-SELECT a.AccountID, a.FullName, COUNT(g.groupID)
-FROM `account` a 
-JOIN groupaccount g 
-USING (accountID)
-GROUP BY a.accountID;
+SELECT* FROM `testing_system_assignment_5`.`account`;
+DROP TRIGGER IF EXISTS before_insert_group;
+DELIMITER $$
+CREATE TRIGGER before_insert_group 
+BEFORE INSERT ON `group`
+FOR EACH ROW
+BEGIN 
+IF NEW.createDate > NOW() THEN 
+	SIGNAL SQLSTATE '12345'
+    SET MESSAGE_TEXT = 'Create Date must smaller than now. THỬ LẠI ĐIIIII';
+    END IF ;
+    END $$
+DELIMITER ;
 
-SELECT * FROM View_account_groups
-HAVING a.accountID = (SELECT max(count('a.accountID')) FROM `account` a );
-
-
-
-
-
-SELECT a.AccountID 
-FROM View_account_groups;
-
-SELECT a.AccountID, a.FullName, COUNT(g.groupID)
-FROM `account` a 
-JOIN groupaccount g 
-USING (accountID)
-GROUP BY a.accountID
-ORDER BY COUNT(g.groupID) DESC ;
-
-SELECT * FROM View_account_groups;
+INSERT INTO `group`(groupName,  creatorID, createDate )
+VALUES 				  (	3		,     6     , '2025-04-16');
 
 
-
-
-
-
-*/
-
-
-
-
+select * from  `testing_system_assignment_5`.exam;
+select  'code', duration,
+	case 
+		when duration <= 30 then 'short time'
+        when 30 < duration <= 60 then 'medium time'
+        when duration > 60 then 'long time'
+	end as duration_text 
+    from exam;
+    
+    
